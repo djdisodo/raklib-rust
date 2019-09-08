@@ -1,9 +1,10 @@
+use crate::protocol::packet::Packet;
+
 pub struct InternetAddress {
 	ip : &'static str,
 	port : u16,
 	version : u8
 }
-
 impl InternetAddress {
 	pub fn new(address : &'static str, port : u16, version : u8) -> Self{
 		return InternetAddress {

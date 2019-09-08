@@ -1,7 +1,6 @@
 use std::net::UdpSocket;
-use crate::utils::InternetAddress::InternetAddress;
+use crate::utils::internet_address::InternetAddress;
 use std::io::Error;
-use std::ops::Try;
 use std::convert::TryInto;
 use std::borrow::Borrow;
 

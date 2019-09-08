@@ -1,1 +1,1 @@
-pub mod InternetAddress;
+pub mod internet_address;
