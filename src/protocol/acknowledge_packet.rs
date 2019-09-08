@@ -43,7 +43,7 @@ pub trait AcknowledgePacket : Packet {
 					end = start + 512;
 				}
 				for c in start..(end + 1) {
-					self.get_acknowledge_packet_mut().packets.get_mut(cnt).unwrap() = self.get_unsigned_triad(Little);
+					*self.get_acknowledge_packet_mut().packets.get_mut(cnt).unwrap() = self.get_unsigned_triad(Little);
 					cnt += 1;
 				}
 			}

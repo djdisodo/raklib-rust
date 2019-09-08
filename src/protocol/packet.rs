@@ -32,7 +32,8 @@ pub trait Packet : BinaryStream {
 		return &mut self.get_packet_mut().binary_stream;
 	}
 	fn get_string(&mut self) -> String {
-		return String::from_utf8(self.get(self.get_short(Big) as usize)).unwrap();
+		let size : usize = self.get_short(Big) as usize;
+		return String::from_utf8(self.get(size)).unwrap();
 	}
 	fn get_address(&mut self) -> InternetAddress {
 		let version : u8 = self.get_byte();
@@ -45,7 +46,7 @@ pub trait Packet : BinaryStream {
 			}
 			fmt(&mut addr, self.get_byte());
 			let port: u16 = self.get_unsigned_short(Big); // DIFF
-			return InternetAddress::new(addr.as_str(), port, version);
+			return InternetAddress::new(addr, port, version);
 		} /*
 		TODO ipv6 : need inet_ntop
 		else if version == 6 {

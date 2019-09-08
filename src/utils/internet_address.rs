@@ -1,20 +1,20 @@
 use crate::protocol::packet::Packet;
 
 pub struct InternetAddress {
-	ip : &'static str,
+	ip : String,
 	port : u16,
 	version : u8
 }
 impl InternetAddress {
-	pub fn new(address : &'static str, port : u16, version : u8) -> Self{
+	pub fn new(address : String, port : u16, version : u8) -> Self{
 		return InternetAddress {
 			ip : address,
 			port,
 			version
 		};
 	}
-	pub fn get_ip(&self) -> String {
-		return self.ip.to_string();
+	pub fn get_ip(&self) -> &String {
+		return &self.ip;
 	}
 	pub fn get_port(&self) -> u16 {
 		return self.port;
