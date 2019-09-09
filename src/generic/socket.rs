@@ -1,8 +1,5 @@
-use std::net::UdpSocket;
-use crate::utils::internet_address::InternetAddress;
-use std::io::Error;
-use std::convert::TryInto;
-use std::borrow::Borrow;
+use std::net::UdpSocket; use 
+crate::utils::internet_address::InternetAddress; use std::io::Error;
 
 pub struct Socket {
 	socket : UdpSocket,
@@ -10,10 +7,13 @@ pub struct Socket {
 }
 
 impl Socket {
-	pub fn new(bind_address : InternetAddress) -> Result<Socket, Error> {
-		let udp_socket : UdpSocket = UdpSocket::bind(bind_address.get_ip()).unwrap();
+	pub fn new(bind_address : InternetAddress) -> Result<Socket, 
+Error> {
+		let udp_socket : UdpSocket = 
+UdpSocket::bind(bind_address.get_ip()).unwrap();
 		if udp_socket.take_error().unwrap().is_some() {
-			return Err(udp_socket.take_error().unwrap().unwrap());
+			return 
+Err(udp_socket.take_error().unwrap().unwrap());
 		}
 		let socket = Socket {
 			socket : udp_socket,
@@ -34,16 +34,18 @@ impl Socket {
 	pub fn get_last_error(&self) -> Option<Error> {
 		return self.get_socket().take_error().unwrap();
 	}
-	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> Option<Vec<u8>> {
+	pub fn read_packet(&self/* , source : &str, port : &u16 */) 
+-> Option<Vec<u8>> {
 		let mut buffer : Vec<u8> = Vec::new();
-		let result = self.get_socket().recv(&mut buffer);
+		self.get_socket().recv(&mut buffer).unwrap();
 		if buffer.is_empty() {
 			return None;
 		} else {
 			return Some(buffer);
 		}
 	}
-	pub fn write_packet(&self, buffer : &str, dest : &str, port : &u8) -> Result<usize, Error>{
-		return self.get_socket().send(buffer.as_bytes());
+	pub fn write_packet(&self, buffer : &str, dest : &str, port : 
+&u8) -> Result<usize, Error>{
+		return self.get_socket().send_to(buffer.as_bytes(),format!("{}:{}", dest, port)).unwrap();
 	}
 }

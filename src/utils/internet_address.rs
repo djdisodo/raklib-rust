@@ -1,4 +1,3 @@
-use crate::protocol::packet::Packet;
 
 pub struct InternetAddress {
 	ip : String,

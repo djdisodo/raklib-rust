@@ -3,7 +3,6 @@ extern crate rust_sort;
 use crate::protocol::packet::{Packet, PacketStruct};
 use self::rust_sort::quick_sort::quick_sort;
 use binaryutils::binary::Endian::Little;
-use std::ops::AddAssign;
 
 pub struct AcknowledgePacketStruct {
 	packet : PacketStruct,
@@ -30,19 +29,18 @@ pub trait AcknowledgePacket : Packet {
 	fn get_packet_mut(&mut self) -> &mut PacketStruct{
 		return &mut self.get_acknowledge_packet_mut().packet;
 	}
-	fn encode_payload(&mut self) {
-		let mut payload : Vec<u8> = Vec::new();
-		quick_sort(self.get_acknowledge_packet_mut().packets.as_mut_slice());
-		let count = self.get_acknowledge_packet_ref().packets.len();
+	fn decode_payload(&mut self) {
+		let count = self.get_short();
+		self.get_acknowledge_packet_mut().packets.clear();
 		let mut cnt : usize = 0;
-		for i in 0..count {
+		for _i in 0..count {
 			if self.get_byte() == Self::RECORD_TYPE_RANGE {
 				let start : u32 = self.get_unsigned_triad(Little);
 				let mut end : u32 = self.get_unsigned_triad(Little);
 				if (end - start) > 512 {
 					end = start + 512;
 				}
-				for c in start..(end + 1) {
+				for _c in start..(end + 1) {
 					*self.get_acknowledge_packet_mut().packets.get_mut(cnt).unwrap() = self.get_unsigned_triad(Little);
 					cnt += 1;
 				}
@@ -54,6 +52,6 @@ pub trait AcknowledgePacket : Packet {
 	}
 	fn clean(&mut self) -> &mut Self {
 		self.get_acknowledge_packet_mut().packets.clear();
-		return self;
+		return Packet::clean(&mut self);
 	}
 }

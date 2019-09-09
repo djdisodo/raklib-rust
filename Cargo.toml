@@ -1,5 +1,5 @@
 [package]
-name = "raknet-rust"
+name = "rnet"
 version = "0.1.0"
 authors = ["djdis"]
 edition = "2018"

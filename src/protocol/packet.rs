@@ -2,9 +2,7 @@ extern crate atoi;
 use binaryutils::binary_stream::{BinaryStream, BinaryStreamStruct};
 use crate::utils::internet_address::InternetAddress;
 use itoa::fmt;
-use binaryutils::binary::Endian::{Little, Big};
-use std::iter::FromIterator;
-use std::string::Drain;
+use binaryutils::binary::Endian::Big;
 use atoi::atoi;
 
 pub struct PacketStruct {
@@ -40,7 +38,7 @@ pub trait Packet : BinaryStream {
 		let mut addr : String;
 		if version == 4 {
 			addr = String::new();
-			for i in 0..3 {
+			for _i in 0..3 {
 				fmt(&mut addr, self.get_byte());
 				addr.push('.');
 			}
