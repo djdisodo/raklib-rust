@@ -29,7 +29,7 @@ Err(udp_socket.take_error().unwrap().unwrap());
 		return &self.socket;
 	}
 	pub fn close(&mut self) {
-		self.socket.connect("0.0.0.0");
+		self.socket.connect("0.0.0.0").unwrap();
 	}
 	pub fn get_last_error(&self) -> Option<Error> {
 		return self.get_socket().take_error().unwrap();
