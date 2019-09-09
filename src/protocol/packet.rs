@@ -57,9 +57,9 @@ pub trait PacketTrait : BinaryStreamTrait {
 			panic!("BinaryDataException : Unknown IPAddress version {}", version);
 		}
 	}
-	fn put_string(&mut self, v : &str) {
+	fn put_string(&mut self, v : &String) {
 		self.put_short(v.len() as i16, Big);
-		self.put(Vec::from(v));
+		self.put(Vec::from(v.as_str()));
 	}
 	fn put_address(&mut self, address : &InternetAddress) {
 		self.put_byte(address.get_version());

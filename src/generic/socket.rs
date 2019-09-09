@@ -1,8 +1,6 @@
 use std::net::UdpSocket;
-use
-crate::utils::internet_address::InternetAddress;
+use crate::utils::internet_address::InternetAddress;
 use std::io::Error;
-use std::borrow::Borrow;
 
 pub struct Socket {
 	socket: Option<UdpSocket>,
@@ -26,10 +24,10 @@ impl Socket {
 		return &self.bind_address;
 	}
 	pub fn get_socket(&self) -> &UdpSocket {
-		return self.socket.unwrap().borrow();
+		return self.socket.as_ref().unwrap();
 	}
 	pub fn close(&mut self) {
-		drop(self.socket.unwrap());
+		self.socket = None;
 	}
 	pub fn get_last_error(&self) -> Option<Error> {
 		return self.get_socket().take_error().unwrap();

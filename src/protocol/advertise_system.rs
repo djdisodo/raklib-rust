@@ -1,5 +1,6 @@
 use crate::protocol::packet::{Packet, PacketTrait};
 use binaryutils::binary_stream::BinaryStreamTrait;
+use crate::protocol::message_identifiers::ID_ADVERTISE_SYSTEM;
 
 pub struct AdvertiseSystem {
 	pub packet : Packet,
@@ -26,7 +27,7 @@ trait AdvertiseSystemTrait : PacketTrait {
 		return &mut self.get_advertise_system_mut().packet;
 	}
 	fn encode_payload(&mut self) {
-		self.put_string(self.get_advertise_system_ref().server_name.as_str());
+		self.put_string(&self.get_advertise_system_ref().server_name.clone());
 	}
 
 	fn decode_payload(&mut self) {
@@ -44,7 +45,7 @@ impl AdvertiseSystemTrait for AdvertiseSystem {
 	}
 }
 impl PacketTrait for AdvertiseSystem {
-	const PACKET_ID: u8 = unimplemented!();
+	const PACKET_ID: u8 = ID_ADVERTISE_SYSTEM;
 
 	fn get_packet_ref(&self) -> &Packet {
 		unimplemented!()
