@@ -6,7 +6,7 @@ use binaryutils::binary::Endian::Big;
 use atoi::atoi;
 
 pub struct Packet {
-	binary_stream : BinaryStreamStruct,
+	binary_stream : BinaryStream,
 	send_time : f32
 }
 
@@ -96,6 +96,6 @@ pub trait PacketTrait : BinaryStreamTrait {
 	fn clean(&mut self) -> &mut Self {
 		self.reset();
 		self.get_packet_mut().send_time = 0 as f32;
-		return &mut self;
+		return self;
 	}
 }

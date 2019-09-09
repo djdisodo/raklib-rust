@@ -25,7 +25,7 @@ impl ACKTrait for ACK {
 		return &self;
 	}
 	fn get_ack_mut(&mut self) -> &mut ACK {
-		return &mut self;
+		return self;
 	}
 }
 impl AcknowledgePacketTrait for ACK {
