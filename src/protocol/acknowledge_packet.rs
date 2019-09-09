@@ -34,7 +34,7 @@ pub trait AcknowledgePacket : Packet {
 		let mut payload : Vec<u8> = Vec::new();
 		quick_sort(self.get_acknowledge_packet_mut().packets.as_mut_slice());
 		let count : usize = self.get_acknowledge_packet_ref().packets.len();
-		let mut records : usize = 0;
+		let mut records : u16 = 0;
 		if count > 0 {
 			let mut pointer : usize = 1;
 			let mut start: u32 = self.get_acknowledge_packet_ref().packets.get(0).unwrap().clone();
@@ -47,15 +47,32 @@ pub trait AcknowledgePacket : Packet {
 				diff = (current - last) as i64;
 				if diff == 1 {
 					last = current;
-				} else {
-					payload.push(Self::RECORD_TYPE_RANGE as u8);
-					payload.extend(write_unsigned_triad(start, Little));
-					payload.extend(write_unsigned_triad(last, Little));
-					start = last - current;
+				} elseif diff > 1 {
+					if start == last {
+						payload.push(Self::RECORD_TYPE_RANGE as u8);
+						payload.extend(write_unsigned_triad(start, Little));
+						start = last = current;
+					} else {
+						payload.push(Self::RECORD_TYPE_RANGE as u8);
+						payload.extend(write_unsigned_triad(start, Little));
+						payload.extend(write_unsigned_triad(last, Little));
+						start = last = current;
+					}
+					records += 1;
 				}
-				records += 1;
 			}
+			if start == last {
+				payload.push(Self::RECORD_TYPE_RANGE as u8);
+				payload.extend(write_unsigned_triad(start, Little));
+			} else {
+				payload.push(Self::RECORD_TYPE_RANGE as u8);
+				payload.extend(write_unsigned_triad(start, Little));
+				payload.extend(write_unsigned_triad(last, Little));
+			}
+			records += 1;
 		}
+		self.put_unsigned_short(records, Big);
+		self.get_binary_stream_mut().buffer.extend(payload);
 	}
 	fn decode_payload(&mut self) {
 		let count : u16 = self.get_unsigned_short(Big);
