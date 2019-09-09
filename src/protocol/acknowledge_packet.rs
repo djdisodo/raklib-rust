@@ -47,7 +47,7 @@ pub trait AcknowledgePacket : Packet {
 				diff = (current - last) as i64;
 				if diff == 1 {
 					last = current;
-				} elseif diff > 1 {
+				} else if diff > 1 {
 					if start == last {
 						payload.push(Self::RECORD_TYPE_RANGE as u8);
 						payload.extend(write_unsigned_triad(start, Little));
