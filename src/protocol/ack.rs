@@ -3,18 +3,20 @@ use crate::protocol::packet::{PacketTrait, Packet};
 use binaryutils::binary_stream::{BinaryStreamTrait, BinaryStream};
 
 pub struct ACK {
-	acknowledge_packet : AcknowledgePacket
+	acknowledge_packet : AcknowledgePacket,
 }
 
 pub trait ACKTrait : AcknowledgePacketTrait {
 	const PACKET_ID : u8 = 0xc0;
 	fn get_ack_ref(&self) -> &ACK;
 	fn get_ack_mut(&mut self) -> &mut ACK;
-	fn get_acknowledge_packet_ref(&self) -> &AcknowledgePacket{
-		return &self.get_ack_ref().acknowledge_packet;
-	}
-	fn get_acknowledge_packet_mut(&mut self) -> &mut AcknowledgePacket{
-		return &mut self.get_ack_mut().acknowledge_packet;
+}
+
+impl ACK {
+	pub fn new(buffer : Vec<u8>, offset : usize) -> ACK {
+		return ACK {
+			acknowledge_packet : AcknowledgePacket::new(buffer, offset)
+		};
 	}
 }
 
@@ -28,26 +30,25 @@ impl ACKTrait for ACK {
 }
 impl AcknowledgePacketTrait for ACK {
 	fn get_acknowledge_packet_ref(&self) -> &AcknowledgePacket {
-		unimplemented!()
+		return &self.acknowledge_packet;
 	}
 
 	fn get_acknowledge_packet_mut(&mut self) -> &mut AcknowledgePacket {
-		unimplemented!()
+		return &mut self.acknowledge_packet;
 	}
 }
 impl PacketTrait for ACK {
-	const PACKET_ID: u8 = unimplemented!();
-
+	const PACKET_ID: u8 = 0xc0;
 	fn get_packet_ref(&self) -> &Packet {
-		unimplemented!()
+		unimplemented!();
 	}
 
 	fn get_packet_mut(&mut self) -> &mut Packet {
-		unimplemented!()
+		unimplemented!();
 	}
 
 	fn encode_payload(&mut self) {
-		unimplemented!()
+		unimplemented!();
 	}
 
 	fn decode_payload(&mut self) {

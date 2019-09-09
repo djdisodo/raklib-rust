@@ -1,6 +1,6 @@
 extern crate rust_sort;
 
-use crate::protocol::packet::{Packet, Packet, PacketTrait};
+use crate::protocol::packet::{Packet, PacketTrait};
 use self::rust_sort::quick_sort::quick_sort;
 use binaryutils::binary::Endian::{Little, Big};
 use binaryutils::binary::write_unsigned_triad;
@@ -24,10 +24,11 @@ pub trait AcknowledgePacketTrait : PacketTrait {
 	const RECORD_TYPE_SINGLE : u8 = 0x01; //1
 	fn get_acknowledge_packet_ref(&self) -> &AcknowledgePacket;
 	fn get_acknowledge_packet_mut(&mut self) -> &mut AcknowledgePacket;
-	fn get_packet_ref(&self) -> &Packet{
+	fn get_packet_ref(&self) -> &Packet {
 		return &self.get_acknowledge_packet_ref().packet;
 	}
-	fn get_packet_mut(&mut self) -> &mut Packet{
+
+	fn get_packet_mut(&mut self) -> &mut Packet {
 		return &mut self.get_acknowledge_packet_mut().packet;
 	}
 	fn encode_payload(&mut self) {
@@ -74,7 +75,7 @@ pub trait AcknowledgePacketTrait : PacketTrait {
 			records += 1;
 		}
 		self.put_unsigned_short(records, Big);
-		Self::Parent::get_binary_stream_mut(self).buffer.extend(payload);
+		self.put(payload);
 	}
 	fn decode_payload(&mut self) {
 		let count : u16 = self.get_unsigned_short(Big);
@@ -99,6 +100,6 @@ pub trait AcknowledgePacketTrait : PacketTrait {
 	}
 	fn clean(&mut self) -> &mut Self {
 		self.get_acknowledge_packet_mut().packets.clear();
-		return Packet::clean(self);
+		return PacketTrait::clean(self);
 	}
 }

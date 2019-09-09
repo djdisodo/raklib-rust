@@ -1,5 +1,5 @@
 extern crate atoi;
-use binaryutils::binary_stream::{BinaryStream, BinaryStreamStruct, BinaryStreamTrait};
+use binaryutils::binary_stream::{BinaryStream, BinaryStreamTrait};
 use crate::utils::internet_address::InternetAddress;
 use itoa::fmt;
 use binaryutils::binary::Endian::Big;
@@ -13,7 +13,7 @@ pub struct Packet {
 impl Packet {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Packet {
 		return Packet {
-			binary_stream : BinaryStreamStruct::new(buffer, offset),
+			binary_stream : BinaryStream::new(buffer, offset),
 			send_time : -1 as f32
 		}
 	}
@@ -23,10 +23,10 @@ pub trait PacketTrait : BinaryStreamTrait {
 	const PACKET_ID : u8;
 	fn get_packet_ref(&self) -> &Packet;
 	fn get_packet_mut(&mut self) -> &mut Packet;
-	fn get_binary_stream_ref(&self) -> &BinaryStreamStruct {
+	fn get_binary_stream_ref(&self) -> &BinaryStream {
 		return &self.get_packet_ref().binary_stream;
 	}
-	fn get_binary_stream_mut(&mut self) -> &mut BinaryStreamStruct {
+	fn get_binary_stream_mut(&mut self) -> &mut BinaryStream {
 		return &mut self.get_packet_mut().binary_stream;
 	}
 	fn get_string(&mut self) -> String {
@@ -81,7 +81,7 @@ pub trait PacketTrait : BinaryStreamTrait {
 		self.encode_payload();
 	}
 	fn encode_header(&mut self) {
-		self.put_byte(Self::packet_ID);
+		self.put_byte(Self::PACKET_ID);
 	}
 	fn encode_payload(&mut self);
 	fn decode(&mut self) {
@@ -96,6 +96,6 @@ pub trait PacketTrait : BinaryStreamTrait {
 	fn clean(&mut self) -> &mut Self {
 		self.reset();
 		self.get_packet_mut().send_time = 0 as f32;
-		return self;
+		return &mut self;
 	}
 }
