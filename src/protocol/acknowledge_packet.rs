@@ -80,6 +80,6 @@ pub trait AcknowledgePacket : Packet {
 	}
 	fn clean(&mut self) -> &mut Self {
 		self.get_acknowledge_packet_mut().packets.clear();
-		return Packet::clean(&mut self);
+		return Packet::clean(self);
 	}
 }
