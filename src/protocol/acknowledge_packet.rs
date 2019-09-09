@@ -51,12 +51,14 @@ pub trait AcknowledgePacket : Packet {
 					if start == last {
 						payload.push(Self::RECORD_TYPE_RANGE as u8);
 						payload.extend(write_unsigned_triad(start, Little));
-						start = last = current;
+						last = current;
+						start = last;
 					} else {
 						payload.push(Self::RECORD_TYPE_RANGE as u8);
 						payload.extend(write_unsigned_triad(start, Little));
 						payload.extend(write_unsigned_triad(last, Little));
-						start = last = current;
+						last = current;
+						start = last
 					}
 					records += 1;
 				}
