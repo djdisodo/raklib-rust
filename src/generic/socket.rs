@@ -46,6 +46,6 @@ Err(udp_socket.take_error().unwrap().unwrap());
 	}
 	pub fn write_packet(&self, buffer : &str, dest : &str, port : 
 &u8) -> Result<usize, Error>{
-		return self.get_socket().send_to(buffer.as_bytes(),format!("{}:{}", dest, port)).unwrap();
+		return self.get_socket().send_to(buffer.as_bytes(),format!("{}:{}", dest, port));
 	}
 }

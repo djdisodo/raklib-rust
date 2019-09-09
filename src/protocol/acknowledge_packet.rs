@@ -2,7 +2,8 @@ extern crate rust_sort;
 
 use crate::protocol::packet::{Packet, PacketStruct};
 use self::rust_sort::quick_sort::quick_sort;
-use binaryutils::binary::Endian::Little;
+use binaryutils::binary::Endian::{Little, Big};
+use binaryutils::binary::write_unsigned_triad;
 
 pub struct AcknowledgePacketStruct {
 	packet : PacketStruct,
@@ -29,8 +30,35 @@ pub trait AcknowledgePacket : Packet {
 	fn get_packet_mut(&mut self) -> &mut PacketStruct{
 		return &mut self.get_acknowledge_packet_mut().packet;
 	}
+	fn encode_payload(&mut self) {
+		let mut payload : Vec<u8> = Vec::new();
+		quick_sort(self.get_acknowledge_packet_mut().packets.as_mut_slice());
+		let count : usize = self.get_acknowledge_packet_ref().packets.len();
+		let mut records : usize = 0;
+		if count > 0 {
+			let mut pointer : usize = 1;
+			let mut start: u32 = self.get_acknowledge_packet_ref().packets.get(0).unwrap().clone();
+			let mut last : u32 = start.clone();
+			let mut current : u32;
+			let mut diff : i64;
+			while pointer < count {
+				current = self.get_acknowledge_packet_ref().packets.get(pointer).unwrap().clone();
+				pointer += 1;
+				diff = (current - last) as i64;
+				if diff == 1 {
+					last = current;
+				} else {
+					payload.push(Self::RECORD_TYPE_RANGE as u8);
+					payload.extend(write_unsigned_triad(start, Little));
+					payload.extend(write_unsigned_triad(last, Little));
+					start = last - current;
+				}
+				records += 1;
+			}
+		}
+	}
 	fn decode_payload(&mut self) {
-		let count = self.get_short();
+		let count : u16 = self.get_unsigned_short(Big);
 		self.get_acknowledge_packet_mut().packets.clear();
 		let mut cnt : usize = 0;
 		for _i in 0..count {
