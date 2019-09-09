@@ -19,7 +19,7 @@ Err(udp_socket.take_error().unwrap().unwrap());
 			socket : udp_socket,
 			bind_address
 		};
-		socket.get_socket().set_nonblocking(true);
+		socket.get_socket().set_nonblocking(true).unwrap();
 		return Ok(socket);
 	}
 	pub fn get_bind_address(&self) -> &InternetAddress {

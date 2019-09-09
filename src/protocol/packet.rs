@@ -39,10 +39,10 @@ pub trait Packet : BinaryStream {
 		if version == 4 {
 			addr = String::new();
 			for _i in 0..3 {
-				fmt(&mut addr, self.get_byte());
+				fmt(&mut addr, self.get_byte()).unwrap();
 				addr.push('.');
 			}
-			fmt(&mut addr, self.get_byte());
+			fmt(&mut addr, self.get_byte()).unwrap();
 			let port: u16 = self.get_unsigned_short(Big); // DIFF
 			return InternetAddress::new(addr, port, version);
 		} /*
