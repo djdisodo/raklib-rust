@@ -9,7 +9,7 @@ pub struct Socket {
 
 impl Socket {
 	pub fn new(bind_address: InternetAddress) -> Result<Socket, Error> {
-		let udp_socket: UdpSocket = UdpSocket::bind(bind_address.get_ip()).unwrap();
+		let udp_socket: UdpSocket = UdpSocket::bind(format!("{}:{}", bind_address.get_ip(), bind_address.get_port())).unwrap();
 		if udp_socket.take_error().unwrap().is_some() {
 			return Err(udp_socket.take_error().unwrap().unwrap());
 		}
