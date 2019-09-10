@@ -17,7 +17,7 @@ impl Socket {
 			socket: Some(udp_socket),
 			bind_address,
 		};
-		socket.get_socket().set_nonblocking(true).unwrap();
+		socket.get_socket().set_nonblocking(true).expect("Failed to enter non-blocking mode");
 		return Ok(socket);
 	}
 	pub fn get_bind_address(&self) -> &InternetAddress {
@@ -32,14 +32,10 @@ impl Socket {
 	pub fn get_last_error(&self) -> Option<Error> {
 		return self.get_socket().take_error().unwrap();
 	}
-	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> Option<Vec<u8>> {
+	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> Vec<u8> {
 		let mut buffer: Vec<u8> = Vec::new();
 		self.get_socket().recv(&mut buffer).unwrap();
-		if buffer.is_empty() {
-			return None;
-		} else {
-			return Some(buffer);
-		}
+		return buffer;
 	}
 	pub fn write_packet(&self, buffer: &str, dest: &str, port: &u8) -> Result<usize, Error> {
 		return self.get_socket().send_to(buffer.as_bytes(), format!("{}:{}", dest, port));
