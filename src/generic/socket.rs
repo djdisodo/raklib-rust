@@ -1,4 +1,4 @@
-use std::net::UdpSocket;
+use std::net::{UdpSocket, SocketAddr};
 use crate::utils::internet_address::InternetAddress;
 use std::io::Error;
 
@@ -34,8 +34,15 @@ impl Socket {
 	}
 	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> Vec<u8> {
 		let mut buffer: Vec<u8> = Vec::new();
-		self.get_socket().recv(&mut buffer).unwrap();
-		return buffer;
+		match self.get_socket().recv_from(&mut buffer) {
+			Ok(ok) => {
+				return buffer;
+			},
+			Err(e) => {
+				println!("{:?}", e);
+				return Vec::new();
+			}
+		}
 	}
 	pub fn write_packet(&self, buffer: &str, dest: &str, port: &u8) -> Result<usize, Error> {
 		return self.get_socket().send_to(buffer.as_bytes(), format!("{}:{}", dest, port));
