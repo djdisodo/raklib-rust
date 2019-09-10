@@ -8,6 +8,7 @@ pub struct Socket {
 }
 
 impl Socket {
+	const RECV_BUFFER_SIZE : usize = 1024 * 1024;
 	pub fn new(bind_address: InternetAddress) -> Result<Socket, Error> {
 		let udp_socket: UdpSocket = UdpSocket::bind(format!("{}:{}", bind_address.get_ip(), bind_address.get_port())).unwrap();
 		if udp_socket.take_error().unwrap().is_some() {
@@ -32,14 +33,14 @@ impl Socket {
 	pub fn get_last_error(&self) -> Option<Error> {
 		return self.get_socket().take_error().unwrap();
 	}
-	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> Vec<u8> {
-		let mut buffer: Vec<u8> = Vec::new();
+	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> [u8; Self::RECV_BUFFER_SIZE] {
+		let mut buffer = [0u8; Self::RECV_BUFFER_SIZE];
 		match self.get_socket().recv_from(&mut buffer) {
 			Ok(ok) => {
 				return buffer;
 			},
 			Err(e) => {
-				return Vec::new();
+				return buffer;
 			}
 		}
 	}
