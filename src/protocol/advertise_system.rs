@@ -31,6 +31,14 @@ impl DerefMut for AdvertiseSystem {
 	}
 }
 impl Encode for AdvertiseSystem {
+	fn encode(&mut self) {
+		self.packet.encode();
+		Encode::encode(self);
+	}
+	fn decode(&mut self) {
+		self.packet.decode();
+		Encode::decode(self);
+	}
 	fn encode_header(&mut self) {
 		self.packet.encode_header();
 	}

@@ -20,20 +20,20 @@ impl Packet {
 		}
 	}
 	pub fn get_string(&mut self) -> String {
-		let size : usize = self.binary_stream.get_short(Big) as usize;
-		return String::from_utf8(self.binary_stream.get(size)).unwrap();
+		let size : usize = self.get_short(Big) as usize;
+		return String::from_utf8(self.get(size)).unwrap();
 	}
 	pub fn get_address(&mut self) -> InternetAddress {
-		let version : u8 = self.binary_stream.get_byte();
+		let version : u8 = self.get_byte();
 		let mut addr : String;
 		if version == 4 {
 			addr = String::new();
 			for _i in 0..3 {
-				fmt(&mut addr, self.binary_stream.get_byte()).unwrap();
+				fmt(&mut addr, self.get_byte()).unwrap();
 				addr.push('.');
 			}
-			fmt(&mut addr, self.binary_stream.get_byte()).unwrap();
-			let port: u16 = self.binary_stream.get_unsigned_short(Big); // DIFF
+			fmt(&mut addr, self.get_byte()).unwrap();
+			let port: u16 = self.get_unsigned_short(Big); // DIFF
 			return InternetAddress::new(addr, port, version);
 		} /*
 		TODO ipv6 : need inet_ntop
@@ -48,11 +48,11 @@ impl Packet {
 		}
 	}
 	pub fn put_string(&mut self, v : &String) {
-		self.binary_stream.put_short(v.len() as i16, Big);
-		self.binary_stream.put(Vec::from(v.as_str()));
+		self.put_short(v.len() as i16, Big);
+		self.put(Vec::from(v.as_str()));
 	}
 	pub fn put_address(&mut self, address : &InternetAddress) {
-		self.binary_stream.put_byte(address.get_version());
+		self.put_byte(address.get_version());
 		if address.get_version() == 4 {
 			let mut parts : Vec<u8> = Vec::new();
 			for i in address.get_ip().split('.') {
@@ -65,18 +65,8 @@ impl Packet {
 			panic!("InvalidArgumentException : IP version {} is not supported", address.get_version());
 		}
 	}
-	fn encode(&mut self) {
-		self.binary_stream.reset();
-		self.encode_header();
-		self.encode_payload();
-	}
-	fn decode(&mut self) {
-		self.binary_stream.set_offset(0);
-		self.decode_header();
-		self.decode_payload();
-	}
 	pub fn clean(&mut self) {
-		self.binary_stream.reset();
+		self.reset();
 		self.send_time = 0 as f32;
 	}
 }
@@ -96,16 +86,22 @@ impl DerefMut for Packet {
 }
 
 impl Encode for Packet {
+	fn encode(&mut self) {
+		self.binary_stream.reset();
+	}
+	fn decode(&mut self) {
+		self.set_offset(0);
+	}
 	fn encode_header(&mut self) {
 		unimplemented!()
 	}
 
 	fn encode_payload(&mut self) {
-		self.binary_stream.put_byte(Self::PACKET_ID);
+		self.put_byte(Self::PACKET_ID);
 	}
 
 	fn decode_header(&mut self) {
-		self.binary_stream.get_byte();
+		self.get_byte();
 	}
 
 	fn decode_payload(&mut self) {
@@ -114,6 +110,14 @@ impl Encode for Packet {
 }
 
 pub trait Encode {
+	fn encode(&mut self) {
+		self.encode_header();
+		self.encode_payload();
+	}
+	fn decode(&mut self) {
+		self.decode_header();
+		self.decode_payload();
+	}
 	fn encode_header(&mut self);
 	fn encode_payload(&mut self);
 	fn decode_header(&mut self);

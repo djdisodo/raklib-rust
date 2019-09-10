@@ -88,8 +88,8 @@ impl Encode for AcknowledgePacket {
 			}
 			records += 1;
 		}
-		self.packet.put_unsigned_short(records, Big);
-		self.packet.put(payload);
+		self.put_unsigned_short(records, Big);
+		self.put(payload);
 	}
 
 	fn decode_header(&mut self) {
@@ -97,18 +97,18 @@ impl Encode for AcknowledgePacket {
 	}
 
 	fn decode_payload(&mut self) {
-		let count : u16 = self.packet.get_unsigned_short(Big);
+		let count : u16 = self.get_unsigned_short(Big);
 		self.packets.clear();
 		let mut cnt : usize = 0;
 		for _i in 0..count {
 			if self.get_byte() == Self::RECORD_TYPE_RANGE {
-				let start : u32 = self.packet.get_unsigned_triad(Little);
-				let mut end : u32 = self.packet.get_unsigned_triad(Little);
+				let start : u32 = self.get_unsigned_triad(Little);
+				let mut end : u32 = self.get_unsigned_triad(Little);
 				if (end - start) > 512 {
 					end = start + 512;
 				}
 				for _c in start..(end + 1) {
-					*self.packets.get_mut(cnt).unwrap() = self.packet.get_unsigned_triad(Little);
+					*self.packets.get_mut(cnt).unwrap() = self.get_unsigned_triad(Little);
 					cnt += 1;
 				}
 			}
