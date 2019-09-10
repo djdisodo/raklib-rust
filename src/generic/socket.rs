@@ -39,7 +39,6 @@ impl Socket {
 				return buffer;
 			},
 			Err(e) => {
-				println!("{:?}", e);
 				return Vec::new();
 			}
 		}
