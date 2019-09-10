@@ -1,9 +1,10 @@
 extern crate atoi;
-use binaryutils::binary_stream::{BinaryStream, BinaryStreamTrait};
 use crate::utils::internet_address::InternetAddress;
 use itoa::fmt;
 use binaryutils::binary::Endian::Big;
 use atoi::atoi;
+use binaryutils::binary_stream::BinaryStream;
+use std::ops::{Deref, DerefMut};
 
 pub struct Packet {
 	binary_stream : BinaryStream,
@@ -11,39 +12,28 @@ pub struct Packet {
 }
 
 impl Packet {
+	const PACKET_ID : u8 = 0;
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Packet {
 		return Packet {
 			binary_stream : BinaryStream::new(buffer, offset),
 			send_time : -1 as f32
 		}
 	}
-}
-
-pub trait PacketTrait : BinaryStreamTrait {
-	const PACKET_ID : u8;
-	fn get_packet_ref(&self) -> &Packet;
-	fn get_packet_mut(&mut self) -> &mut Packet;
-	fn get_binary_stream_ref(&self) -> &BinaryStream {
-		return &self.get_packet_ref().binary_stream;
+	pub fn get_string(&mut self) -> String {
+		let size : usize = self.binary_stream.get_short(Big) as usize;
+		return String::from_utf8(self.binary_stream.get(size)).unwrap();
 	}
-	fn get_binary_stream_mut(&mut self) -> &mut BinaryStream {
-		return &mut self.get_packet_mut().binary_stream;
-	}
-	fn get_string(&mut self) -> String {
-		let size : usize = self.get_short(Big) as usize;
-		return String::from_utf8(self.get(size)).unwrap();
-	}
-	fn get_address(&mut self) -> InternetAddress {
-		let version : u8 = self.get_byte();
+	pub fn get_address(&mut self) -> InternetAddress {
+		let version : u8 = self.binary_stream.get_byte();
 		let mut addr : String;
 		if version == 4 {
 			addr = String::new();
 			for _i in 0..3 {
-				fmt(&mut addr, self.get_byte()).unwrap();
+				fmt(&mut addr, self.binary_stream.get_byte()).unwrap();
 				addr.push('.');
 			}
-			fmt(&mut addr, self.get_byte()).unwrap();
-			let port: u16 = self.get_unsigned_short(Big); // DIFF
+			fmt(&mut addr, self.binary_stream.get_byte()).unwrap();
+			let port: u16 = self.binary_stream.get_unsigned_short(Big); // DIFF
 			return InternetAddress::new(addr, port, version);
 		} /*
 		TODO ipv6 : need inet_ntop
@@ -57,12 +47,12 @@ pub trait PacketTrait : BinaryStreamTrait {
 			panic!("BinaryDataException : Unknown IPAddress version {}", version);
 		}
 	}
-	fn put_string(&mut self, v : &String) {
-		self.put_short(v.len() as i16, Big);
-		self.put(Vec::from(v.as_str()));
+	pub fn put_string(&mut self, v : &String) {
+		self.binary_stream.put_short(v.len() as i16, Big);
+		self.binary_stream.put(Vec::from(v.as_str()));
 	}
-	fn put_address(&mut self, address : &InternetAddress) {
-		self.put_byte(address.get_version());
+	pub fn put_address(&mut self, address : &InternetAddress) {
+		self.binary_stream.put_byte(address.get_version());
 		if address.get_version() == 4 {
 			let mut parts : Vec<u8> = Vec::new();
 			for i in address.get_ip().split('.') {
@@ -76,26 +66,56 @@ pub trait PacketTrait : BinaryStreamTrait {
 		}
 	}
 	fn encode(&mut self) {
-		self.reset();
+		self.binary_stream.reset();
 		self.encode_header();
 		self.encode_payload();
 	}
-	fn encode_header(&mut self) {
-		self.put_byte(Self::PACKET_ID);
-	}
-	fn encode_payload(&mut self);
 	fn decode(&mut self) {
-		self.set_offset(0);
+		self.binary_stream.set_offset(0);
 		self.decode_header();
 		self.decode_payload();
 	}
+	pub fn clean(&mut self) {
+		self.binary_stream.reset();
+		self.send_time = 0 as f32;
+	}
+}
+
+impl Deref for Packet {
+	type Target = BinaryStream;
+
+	fn deref(&self) -> &Self::Target {
+		return &self.binary_stream;
+	}
+}
+
+impl DerefMut for Packet {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		return &mut self.binary_stream;
+	}
+}
+
+impl Encode for Packet {
+	fn encode_header(&mut self) {
+		unimplemented!()
+	}
+
+	fn encode_payload(&mut self) {
+		self.binary_stream.put_byte(Self::PACKET_ID);
+	}
+
 	fn decode_header(&mut self) {
-		self.get_byte();
+		self.binary_stream.get_byte();
 	}
+
+	fn decode_payload(&mut self) {
+		unimplemented!()
+	}
+}
+
+pub trait Encode {
+	fn encode_header(&mut self);
+	fn encode_payload(&mut self);
+	fn decode_header(&mut self);
 	fn decode_payload(&mut self);
-	fn clean(&mut self) -> &mut Self {
-		self.reset();
-		self.get_packet_mut().send_time = 0 as f32;
-		return self;
-	}
 }

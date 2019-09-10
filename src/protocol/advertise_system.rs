@@ -1,6 +1,7 @@
-use crate::protocol::packet::{Packet, PacketTrait};
-use binaryutils::binary_stream::BinaryStreamTrait;
+use crate::protocol::packet::{Packet, Encode};
 use crate::protocol::message_identifiers::ID_ADVERTISE_SYSTEM;
+use std::ops::{Deref, DerefMut};
+use std::borrow::Borrow;
 
 pub struct AdvertiseSystem {
 	pub packet : Packet,
@@ -16,52 +17,34 @@ impl AdvertiseSystem {
 	}
 }
 
-trait AdvertiseSystemTrait : PacketTrait {
-	fn get_advertise_system_ref(&self) -> &AdvertiseSystem;
-	fn get_advertise_system_mut(&mut self) -> &mut AdvertiseSystem;
-	fn get_packet_ref(&self) -> &Packet {
-		return &self.get_advertise_system_ref().packet;
-	}
+impl Deref for AdvertiseSystem {
+	type Target = Packet;
 
-	fn get_packet_mut(&mut self) -> &mut Packet {
-		return &mut self.get_advertise_system_mut().packet;
-	}
-	fn encode_payload(&mut self) {
-		self.put_string(&self.get_advertise_system_ref().server_name.clone());
-	}
-
-	fn decode_payload(&mut self) {
-		self.get_advertise_system_mut().server_name = String::from(self.get_string());
+	fn deref(&self) -> &Self::Target {
+		return &self.packet;
 	}
 }
 
-impl AdvertiseSystemTrait for AdvertiseSystem {
-	fn get_advertise_system_ref(&self) -> &AdvertiseSystem {
-		return self;
-	}
-
-	fn get_advertise_system_mut(&mut self) -> &mut AdvertiseSystem {
-		return self;
+impl DerefMut for AdvertiseSystem {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		return &mut self.packet;
 	}
 }
-impl PacketTrait for AdvertiseSystem {
-	const PACKET_ID: u8 = ID_ADVERTISE_SYSTEM;
-
-	fn get_packet_ref(&self) -> &Packet {
-		unimplemented!()
-	}
-
-	fn get_packet_mut(&mut self) -> &mut Packet {
-		unimplemented!()
+impl Encode for AdvertiseSystem {
+	fn encode_header(&mut self) {
+		self.packet.encode_header();
 	}
 
 	fn encode_payload(&mut self) {
-		unimplemented!()
+		let v : String = self.server_name.clone();
+		self.put_string(v.borrow());
+	}
+
+	fn decode_header(&mut self) {
+		self.packet.decode_header();
 	}
 
 	fn decode_payload(&mut self) {
-		unimplemented!()
+		self.server_name = String::from(self.packet.get_string());
 	}
 }
-
-impl BinaryStreamTrait for AdvertiseSystem {}
