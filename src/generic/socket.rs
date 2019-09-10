@@ -8,7 +8,7 @@ pub struct Socket {
 }
 
 impl Socket {
-	const RECV_BUFFER_SIZE : usize = 1024 * 1024;
+	pub const RECV_BUFFER_SIZE : usize = 65535;
 	pub fn new(bind_address: InternetAddress) -> Result<Socket, Error> {
 		let udp_socket: UdpSocket = UdpSocket::bind(format!("{}:{}", bind_address.get_ip(), bind_address.get_port())).unwrap();
 		if udp_socket.take_error().unwrap().is_some() {
