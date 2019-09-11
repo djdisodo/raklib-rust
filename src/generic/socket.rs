@@ -47,7 +47,7 @@ impl Socket {
 			}
 		}
 	}
-	pub fn write_packet(&self, buffer: &str, dest: &str, port: &u8) -> Result<usize, Error> {
+	pub fn write_packet(&self, buffer: &str, dest: &str, port: u16) -> Result<usize, Error> {
 		return self.get_socket().send_to(buffer.as_bytes(), format!("{}:{}", dest, port));
 	}
 }
