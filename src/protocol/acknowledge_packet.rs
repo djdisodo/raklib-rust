@@ -7,20 +7,20 @@ use binaryutils::binary::write_unsigned_triad;
 use std::ops::{Deref, DerefMut};
 
 pub struct AcknowledgePacket {
-	packet : Packet,
+	pub packet : Packet,
 	packets : Vec<u32>
 }
 
 impl AcknowledgePacket {
-	const RECORD_TYPE_RANGE : u8 = 0x00; //0
-	const RECORD_TYPE_SINGLE : u8 = 0x01; //1
-	pub fn new(buffer : Vec<u8>, offset : usize) -> AcknowledgePacket {
+	pub const RECORD_TYPE_RANGE : u8 = 0x00; //0
+	pub const RECORD_TYPE_SINGLE : u8 = 0x01; //1
+	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> AcknowledgePacket {
 		return AcknowledgePacket {
-			packet : Packet::new(buffer, offset),
+			packet : Packet::new(buffer, offset, id),
 			packets : Vec::new()
 		};
 	}
-	fn clean(&mut self) {
+	pub fn clean(&mut self) {
 		self.packets.clear();
 		self.packet.clean();
 	}
@@ -41,6 +41,8 @@ impl DerefMut for AcknowledgePacket {
 }
 
 impl Encode for AcknowledgePacket {
+	const PACKET_ID: u8 = 0;
+
 	fn encode_header(&mut self) {
 		self.packet.encode_header();
 	}

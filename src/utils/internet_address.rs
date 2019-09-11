@@ -25,3 +25,8 @@ impl InternetAddress {
 		return self.get_ip() == address.get_ip() && self.get_port() == address.get_port() && self.get_version() == address.get_version();
 	}
 }
+impl Clone for InternetAddress {
+	fn clone(&self) -> Self {
+		return InternetAddress::new(self.get_ip().clone(), self.get_port(), self.get_version());
+	}
+}

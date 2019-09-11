@@ -1,6 +1,6 @@
 use std::net::{UdpSocket, SocketAddr};
 use crate::utils::internet_address::InternetAddress;
-use std::io::Error;
+use std::io::{Error, ErrorKind};
 
 pub struct Socket {
 	socket: Option<UdpSocket>,
@@ -40,6 +40,9 @@ impl Socket {
 				return (buffer, Some(ok));
 			},
 			Err(e) => {
+				if e.kind() != ErrorKind::WouldBlock {
+					dbg!(":?", e);
+				}
 				return (buffer, None);
 			}
 		}

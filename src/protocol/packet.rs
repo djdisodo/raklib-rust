@@ -8,15 +8,16 @@ use std::ops::{Deref, DerefMut};
 
 pub struct Packet {
 	binary_stream : BinaryStream,
-	send_time : f32
+	send_time : f32,
+	id : u8
 }
 
 impl Packet {
-	const PACKET_ID : u8 = 0;
-	pub fn new(buffer : Vec<u8>, offset : usize) -> Packet {
+	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> Packet {
 		return Packet {
 			binary_stream : BinaryStream::new(buffer, offset),
-			send_time : -1 as f32
+			send_time : -1 as f32,
+			id
 		}
 	}
 	pub fn get_string(&mut self) -> String {
@@ -47,11 +48,11 @@ impl Packet {
 			panic!("BinaryDataException : Unknown IPAddress version {}", version);
 		}
 	}
-	pub fn put_string(&mut self, v : &String) {
+	pub fn put_string(&mut self, v : String) {
 		self.put_short(v.len() as i16, Big);
 		self.put(Vec::from(v.as_str()));
 	}
-	pub fn put_address(&mut self, address : &InternetAddress) {
+	pub fn put_address(&mut self, address : InternetAddress) {
 		self.put_byte(address.get_version());
 		if address.get_version() == 4 {
 			let mut parts : Vec<u8> = Vec::new();
@@ -86,6 +87,8 @@ impl DerefMut for Packet {
 }
 
 impl Encode for Packet {
+	const PACKET_ID: u8 = 0;
+
 	fn encode(&mut self) {
 		self.binary_stream.reset();
 	}
@@ -93,11 +96,12 @@ impl Encode for Packet {
 		self.set_offset(0);
 	}
 	fn encode_header(&mut self) {
-		unimplemented!()
+		let v : u8 = self.id;
+		self.put_byte(v);
 	}
 
 	fn encode_payload(&mut self) {
-		self.put_byte(Self::PACKET_ID);
+		unimplemented!()
 	}
 
 	fn decode_header(&mut self) {
@@ -110,6 +114,7 @@ impl Encode for Packet {
 }
 
 pub trait Encode {
+	const PACKET_ID : u8;
 	fn encode(&mut self) {
 		self.encode_header();
 		self.encode_payload();

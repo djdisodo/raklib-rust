@@ -3,3 +3,7 @@ pub mod acknowledge_packet;
 pub mod ack;
 pub mod message_identifiers;
 pub mod advertise_system;
+pub mod connected_ping;
+pub mod connected_pong;
+pub mod connection_request;
+pub mod connection_request_accepted;
