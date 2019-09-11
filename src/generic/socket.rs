@@ -48,6 +48,6 @@ impl Socket {
 		}
 	}
 	pub fn write_packet(&self, buffer: Vec<u8>, dest: &str, port: u16) -> Result<usize, Error> {
-		return self.get_socket().send_to(buffer.as_bytes(), format!("{}:{}", dest, port));
+		return self.get_socket().send_to(buffer.as_slice(), format!("{}:{}", dest, port));
 	}
 }
