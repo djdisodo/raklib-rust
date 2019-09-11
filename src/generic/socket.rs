@@ -34,7 +34,7 @@ impl Socket {
 		return self.get_socket().take_error().unwrap();
 	}
 	pub fn read_packet(&self/* , source : &str, port : &u16 */) -> ([u8; Self::RECV_BUFFER_SIZE], Option<(usize, SocketAddr)>) {
-		let mut buffer = [0u8; Self::RECV_BUFFER_SIZE];
+		let mut buffer : [u8; Self::RECV_BUFFER_SIZE] = [0u8; Self::RECV_BUFFER_SIZE];
 		match self.get_socket().recv_from(&mut buffer) {
 			Ok(ok) => {
 				return (buffer, Some(ok));
