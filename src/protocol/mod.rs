@@ -9,3 +9,4 @@ pub mod connection_request;
 pub mod connection_request_accepted;
 pub mod datagram;
 pub mod packet_reliability;
+pub mod encapsulated_packet;
