@@ -92,7 +92,7 @@ impl From<&mut BinaryStream> for EncapsulatedPacket {
 		let mut packet : EncapsulatedPacket = EncapsulatedPacket::new();
 
 		let flags : u8 = stream.get_byte();
-		packet.reliability = (flags & Self::SPLIT_FLAG) >> Self::RELIABILITY_SHIFT;
+		packet.reliability = (flags & Self::RELIABILITY_FLAGS) >> Self::RELIABILITY_SHIFT;
 		let reliability : &u8 = &packet.reliability;
 		packet.has_split = (flags & Self::SPLIT_FLAG) > 0;
 		let has_split : &bool = &packet.has_split;
