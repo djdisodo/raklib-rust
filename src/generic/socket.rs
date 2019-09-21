@@ -9,12 +9,12 @@ pub struct Socket {
 
 impl Socket {
 	pub const RECV_BUFFER_SIZE : usize = 65535;
-	pub fn new(bind_address: InternetAddress) -> Result<Socket, Error> {
+	pub fn new(bind_address: InternetAddress) -> Result<Self, Error> {
 		let udp_socket: UdpSocket = UdpSocket::bind(format!("{}:{}", bind_address.get_ip(), bind_address.get_port())).unwrap();
 		if udp_socket.take_error().unwrap().is_some() {
 			return Err(udp_socket.take_error().unwrap().unwrap());
 		}
-		let socket = Socket {
+		let socket = Self {
 			socket: Some(udp_socket),
 			bind_address,
 		};

@@ -1,11 +1,11 @@
 use crate::protocol::packet::{Packet, Encode};
-use crate::protocol::message_identifiers::ID_CONNECTION_REQUEST_ACCEPTED;
+use crate::protocol::message_identifiers::ID_NEW_INCOMING_CONNECTION;
 use std::ops::{Deref, DerefMut};
 use binaryutils::binary::Endian::Big;
 use crate::utils::internet_address::InternetAddress;
 use crate::rnet::SYSTEM_ADDRESS_COUNT;
 
-pub struct ConnectionRequestAccepted {
+pub struct NewIncomingConnection {
 	parent : Packet,
 	pub address : InternetAddress,
 	pub system_addresses : Vec<InternetAddress>,
@@ -13,11 +13,11 @@ pub struct ConnectionRequestAccepted {
 	pub send_pong_time : u64
 }
 
-impl ConnectionRequestAccepted {
+impl NewIncomingConnection {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
 		return Self {
 			parent : Packet::new(buffer, offset, Self::PACKET_ID),
-			address : InternetAddress::new(String::from(""), 0, 0),
+			address : InternetAddress::dummy(),
 			system_addresses : Vec::new(),
 			send_ping_time : 0,
 			send_pong_time : 0
@@ -25,7 +25,7 @@ impl ConnectionRequestAccepted {
 	}
 }
 
-impl Deref for ConnectionRequestAccepted {
+impl Deref for NewIncomingConnection {
 	type Target = Packet;
 
 	fn deref(&self) -> &Self::Target {
@@ -33,13 +33,13 @@ impl Deref for ConnectionRequestAccepted {
 	}
 }
 
-impl DerefMut for ConnectionRequestAccepted {
+impl DerefMut for NewIncomingConnection {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		return &mut self.parent;
 	}
 }
-impl Encode for ConnectionRequestAccepted {
-	const PACKET_ID: u8 = ID_CONNECTION_REQUEST_ACCEPTED;
+impl Encode for NewIncomingConnection {
+	const PACKET_ID: u8 = ID_NEW_INCOMING_CONNECTION;
 
 	fn encode_clean(&mut self) {
 		self.parent.encode_clean();
@@ -56,16 +56,14 @@ impl Encode for ConnectionRequestAccepted {
 	fn encode_payload(&mut self) {
 		let address : InternetAddress = self.address.clone();
 		self.put_address(address);
-		self.put_unsigned_short(0, Big);
-		let dummy : InternetAddress = InternetAddress::dummy();
-		for i in 0..SYSTEM_ADDRESS_COUNT {
-			let address : InternetAddress = self.system_addresses.get(i as usize).unwrap_or(&dummy.clone()).clone();
+		for i in 0..self.system_addresses.len() {
+			let address : InternetAddress = self.system_addresses[i].clone();
 			self.put_address(address);
 		}
-		let v : u64 = self.send_ping_time;
-		self.put_unsigned_long(v, Big);
-		let v : u64 = self.send_pong_time;
-		self.put_unsigned_long(v, Big);
+		let send_ping_time : u64 = self.send_ping_time;
+		self.put_unsigned_long(send_ping_time, Big);
+		let send_pong_time : u64 = self.send_pong_time;
+		self.put_unsigned_long(send_pong_time, Big);
 	}
 
 	fn decode_header(&mut self) {
@@ -74,11 +72,16 @@ impl Encode for ConnectionRequestAccepted {
 
 	fn decode_payload(&mut self) {
 		self.address = self.get_address();
-		drop(self.get_short(Big)/* TODO : check this */); //dropping to avoid some build warns
-		let len : usize = self.get_buffer().len();
-		let dummy : InternetAddress = InternetAddress::new(String::from("0.0.0.0"), 0, 4);
+
+		//TODO: HACK!
+		let stop_offset : usize = self.get_buffer().len() - 16; //buffer length - sizeof(sendPingTime) - sizeof(sendPongTime)
+		let dummy : InternetAddress = InternetAddress::dummy();
 		for i in 0..SYSTEM_ADDRESS_COUNT {
-			self.system_addresses[i as usize] = if self.get_offset() + 16 < len { self.get_address() } else { dummy.clone() };
+			if self.get_offset() >= stop_offset {
+				self.system_addresses[i as usize] = dummy.clone();
+			} else {
+				self.system_addresses[i as usize] = self.get_address();
+			}
 		}
 
 		self.send_ping_time = self.get_unsigned_long(Big);

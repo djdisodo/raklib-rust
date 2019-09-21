@@ -1,12 +1,20 @@
-pub mod packet;
-pub mod acknowledge_packet;
 pub mod ack;
-pub mod message_identifiers;
+pub mod acknowledge_packet;
 pub mod advertise_system;
 pub mod connected_ping;
 pub mod connected_pong;
 pub mod connection_request;
 pub mod connection_request_accepted;
 pub mod datagram;
-pub mod packet_reliability;
+pub mod disconnect_notification;
 pub mod encapsulated_packet;
+pub mod incompatible_protocol_version;
+pub mod message_identifiers;
+pub mod nack;
+pub mod new_incoming_connection;
+pub mod offline_message;
+pub mod open_connection_reply1;
+pub mod open_connection_reply2;
+
+pub mod packet;
+pub mod packet_reliability;

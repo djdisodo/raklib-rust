@@ -4,14 +4,14 @@ use std::ops::{Deref, DerefMut};
 use binaryutils::binary::Endian::Big;
 
 pub struct ConnectedPing {
-	pub packet : Packet,
+	parent : Packet,
 	pub send_ping_time : u64
 }
 
 impl ConnectedPing {
-	pub fn new(buffer : Vec<u8>, offset : usize) -> ConnectedPing {
-		return ConnectedPing {
-			packet : Packet::new(buffer, offset, Self::PACKET_ID),
+	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
+		return Self {
+			parent : Packet::new(buffer, offset, Self::PACKET_ID),
 			send_ping_time : 0
 		}
 	}
@@ -21,30 +21,28 @@ impl Deref for ConnectedPing {
 	type Target = Packet;
 
 	fn deref(&self) -> &Self::Target {
-		return &self.packet;
+		return &self.parent;
 	}
 }
 
 impl DerefMut for ConnectedPing {
 	fn deref_mut(&mut self) -> &mut Self::Target {
-		return &mut self.packet;
+		return &mut self.parent;
 	}
 }
 impl Encode for ConnectedPing {
 	const PACKET_ID: u8 = ID_CONNECTED_PING;
 
-	fn encode(&mut self) {
-		self.packet.encode();
-		self.encode_header();
-		self.encode_payload();
+	fn encode_clean(&mut self) {
+		self.parent.encode_clean();
 	}
-	fn decode(&mut self) {
-		self.packet.decode();
-		self.decode_header();
-		self.decode_payload();
+
+	fn decode_clean(&mut self) {
+		self.parent.decode_clean();
 	}
+
 	fn encode_header(&mut self) {
-		self.packet.encode_header();
+		self.parent.encode_header();
 	}
 
 	fn encode_payload(&mut self) {
@@ -53,7 +51,7 @@ impl Encode for ConnectedPing {
 	}
 
 	fn decode_header(&mut self) {
-		self.packet.decode_header();
+		self.parent.decode_header();
 	}
 
 	fn decode_payload(&mut self) {

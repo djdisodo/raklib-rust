@@ -5,17 +5,18 @@ use binaryutils::binary::Endian::Big;
 use atoi::atoi;
 use binaryutils::binary_stream::BinaryStream;
 use std::ops::{Deref, DerefMut};
+use crate::protocol::message_identifiers::ID_UNDEFINED;
 
 pub struct Packet {
-	binary_stream : BinaryStream,
+	parent : BinaryStream,
 	send_time : f32,
 	id : u8
 }
 
 impl Packet {
-	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> Packet {
-		return Packet {
-			binary_stream : BinaryStream::new(buffer, offset),
+	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> Self {
+		return Self {
+			parent : BinaryStream::new(buffer, offset),
 			send_time : -1 as f32,
 			id
 		}
@@ -76,55 +77,56 @@ impl Deref for Packet {
 	type Target = BinaryStream;
 
 	fn deref(&self) -> &Self::Target {
-		return &self.binary_stream;
+		return &self.parent;
 	}
 }
 
 impl DerefMut for Packet {
 	fn deref_mut(&mut self) -> &mut Self::Target {
-		return &mut self.binary_stream;
+		return &mut self.parent;
 	}
 }
 
 impl Encode for Packet {
-	const PACKET_ID: u8 = 0;
-
-	fn encode(&mut self) {
-		self.binary_stream.reset();
-	}
+	const PACKET_ID: u8 = ID_UNDEFINED;
 	fn decode(&mut self) {
 		self.set_offset(0);
 	}
+
+	fn encode_clean(&mut self) {
+		self.reset();
+	}
+
+	fn decode_clean(&mut self) {
+		self.set_offset(0);
+	}
+
 	fn encode_header(&mut self) {
 		let v : u8 = self.id;
 		self.put_byte(v);
 	}
 
-	fn encode_payload(&mut self) {
-		unimplemented!()
-	}
-
 	fn decode_header(&mut self) {
 		self.get_byte();
-	}
-
-	fn decode_payload(&mut self) {
-		unimplemented!()
 	}
 }
 
 pub trait Encode {
 	const PACKET_ID : u8;
 	fn encode(&mut self) {
+		self.decode_clean();
 		self.encode_header();
 		self.encode_payload();
 	}
 	fn decode(&mut self) {
+		self.decode_clean();
 		self.decode_header();
 		self.decode_payload();
 	}
+	fn encode_clean(&mut self);
+	fn decode_clean(&mut self);
 	fn encode_header(&mut self);
-	fn encode_payload(&mut self);
+	fn encode_payload(&mut self) {}
 	fn decode_header(&mut self);
-	fn decode_payload(&mut self);
+	fn decode_payload(&mut self) {}
 }

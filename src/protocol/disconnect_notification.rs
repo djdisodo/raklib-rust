@@ -1,33 +1,34 @@
-use crate::protocol::acknowledge_packet::AcknowledgePacket;
-use crate::protocol::packet::Encode;
+use crate::protocol::packet::{Packet, Encode};
+use crate::protocol::message_identifiers::ID_DISCONNECTION_NOTIFICATION;
 use std::ops::{Deref, DerefMut};
 
-pub struct ACK {
-	parent : AcknowledgePacket,
+pub struct DisconnectNotification {
+	parent : Packet
 }
 
-impl ACK {
+impl DisconnectNotification {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
 		return Self {
-			parent : AcknowledgePacket::new(buffer, offset, Self::PACKET_ID)
-		};
+			parent : Packet::new(buffer, offset, Self::PACKET_ID)
+		}
 	}
 }
-impl Deref for ACK {
-	type Target = AcknowledgePacket;
+
+impl Deref for DisconnectNotification {
+	type Target = Packet;
 
 	fn deref(&self) -> &Self::Target {
 		return &self.parent;
 	}
 }
-impl DerefMut for ACK {
+
+impl DerefMut for DisconnectNotification {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		return &mut self.parent;
 	}
 }
-
-impl Encode for ACK {
-	const PACKET_ID : u8 = 0xc0;
+impl Encode for DisconnectNotification {
+	const PACKET_ID: u8 = ID_DISCONNECTION_NOTIFICATION;
 
 	fn encode_clean(&mut self) {
 		self.parent.encode_clean();
@@ -41,15 +42,7 @@ impl Encode for ACK {
 		self.parent.encode_header();
 	}
 
-	fn encode_payload(&mut self) {
-		self.parent.encode_payload();
-	}
-
 	fn decode_header(&mut self) {
 		self.parent.decode_header();
-	}
-
-	fn decode_payload(&mut self) {
-		self.parent.decode_payload();
 	}
 }

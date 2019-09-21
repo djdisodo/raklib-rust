@@ -379,3 +379,5 @@ pub const ID_RESERVED_9 : u8 = 0x85;
 // For the user to use.  Start your first enumeration at this value.
 pub const ID_USER_PACKET_ENUM : u8 = 0x86;
 //-------------------------------------------------------------------------------------------------------------
+/* this is not actual packet id and also not from raknet */
+pub const ID_UNDEFINED : u8 = 0xff;

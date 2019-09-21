@@ -2,32 +2,32 @@ use crate::protocol::acknowledge_packet::AcknowledgePacket;
 use crate::protocol::packet::Encode;
 use std::ops::{Deref, DerefMut};
 
-pub struct ACK {
+pub struct NACK {
 	parent : AcknowledgePacket,
 }
 
-impl ACK {
+impl NACK {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
 		return Self {
 			parent : AcknowledgePacket::new(buffer, offset, Self::PACKET_ID)
 		};
 	}
 }
-impl Deref for ACK {
+impl Deref for NACK {
 	type Target = AcknowledgePacket;
 
 	fn deref(&self) -> &Self::Target {
 		return &self.parent;
 	}
 }
-impl DerefMut for ACK {
+impl DerefMut for NACK {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		return &mut self.parent;
 	}
 }
 
-impl Encode for ACK {
-	const PACKET_ID : u8 = 0xc0;
+impl Encode for NACK {
+	const PACKET_ID : u8 = 0xa0;
 
 	fn encode_clean(&mut self) {
 		self.parent.encode_clean();

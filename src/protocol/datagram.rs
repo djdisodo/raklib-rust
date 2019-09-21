@@ -1,14 +1,14 @@
 use crate::protocol::encapsulated_packet::EncapsulatedPacket;
 use crate::protocol::packet::{Packet, Encode};
 use std::ops::{Deref, DerefMut};
-use crate::protocol::message_identifiers::ID_CONNECTED_PING;
+use crate::protocol::message_identifiers::ID_UNDEFINED;
 use binaryutils::binary::Endian::Little;
 
 pub struct Datagram {
+	parent : Packet,
 	pub header_flags : u8,
 	pub packets : Vec<EncapsulatedPacket>,
-	pub seq_number : /* Triad */u32,
-	packet : Packet
+	pub seq_number : /* Triad */u32
 }
 
 impl Datagram {
@@ -23,12 +23,12 @@ impl Datagram {
 	pub const BITFLAG_CONTINUOUS_SEND : u8 = 0x08;
 	pub const BITFLAG_NEEDS_B_AND_AS : u8 = 0x04;
 
-	pub fn new(buffer : Vec<u8>, offset : usize) -> Datagram {
-		return Datagram {
+	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
+		return Self {
+			parent: Packet::new(buffer, offset, Self::PACKET_ID),
 			header_flags: 0,
 			packets: Vec::new(),
-			seq_number: 0,
-			packet: Packet::new(buffer, offset, Self::PACKET_ID)
+			seq_number: 0
 		}
 	}
 	pub fn length(&self) -> usize {
@@ -42,7 +42,7 @@ impl Datagram {
 	pub fn clean(&mut self) {
 		self.packets.clear();
 		self.seq_number = 0;
-		self.packet.clean();
+		self.parent.clean();
 	}
 }
 
@@ -50,29 +50,27 @@ impl Deref for Datagram {
 	type Target = Packet;
 
 	fn deref(&self) -> &Self::Target {
-		return &self.packet;
+		return &self.parent;
 	}
 }
 
 impl DerefMut for Datagram {
 	fn deref_mut(&mut self) -> &mut Self::Target {
-		return &mut self.packet;
+		return &mut self.parent;
 	}
 }
 impl Encode for Datagram {
 	/* DON'T USE THIS VALUE */
-	const PACKET_ID: u8 = ID_CONNECTED_PING;
+	const PACKET_ID: u8 = ID_UNDEFINED;
 
-	fn encode(&mut self) {
-		self.packet.encode();
-		self.encode_header();
-		self.encode_payload();
+	fn encode_clean(&mut self) {
+		self.parent.encode_clean();
 	}
-	fn decode(&mut self) {
-		self.packet.decode();
-		self.decode_header();
-		self.decode_payload();
+
+	fn decode_clean(&mut self) {
+		self.parent.decode_clean();
 	}
+
 	fn encode_header(&mut self) {
 		let v : u8 = Self::BITFLAG_VALID | self.header_flags;
 		self.put_byte(v);
@@ -95,7 +93,8 @@ impl Encode for Datagram {
 		self.seq_number = self.get_unsigned_triad(Little);
 
 		while !self.feof() {
-			self.packets.push(EncapsulatedPacket::from(self.packet.deref_mut()));
+			let encapsulated_packet : EncapsulatedPacket = EncapsulatedPacket::from(self.parent.deref_mut());
+			self.packets.push(encapsulated_packet);
 		}
 	}
 }

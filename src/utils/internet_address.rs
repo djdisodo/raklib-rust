@@ -12,6 +12,9 @@ impl InternetAddress {
 			version
 		};
 	}
+	pub fn dummy() -> Self {
+		return InternetAddress::new(String::from("0.0.0.0"), 0, 4);
+	}
 	pub fn get_ip(&self) -> &String {
 		return &self.ip;
 	}

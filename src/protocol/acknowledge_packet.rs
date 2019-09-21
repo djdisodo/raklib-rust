@@ -5,24 +5,25 @@ use self::rust_sort::quick_sort::quick_sort;
 use binaryutils::binary::Endian::{Little, Big};
 use binaryutils::binary::write_unsigned_triad;
 use std::ops::{Deref, DerefMut};
+use crate::protocol::message_identifiers::ID_UNDEFINED;
 
 pub struct AcknowledgePacket {
-	pub packet : Packet,
+	parent : Packet,
 	packets : Vec<u32>
 }
 
 impl AcknowledgePacket {
 	pub const RECORD_TYPE_RANGE : u8 = 0x00; //0
 	pub const RECORD_TYPE_SINGLE : u8 = 0x01; //1
-	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> AcknowledgePacket {
-		return AcknowledgePacket {
-			packet : Packet::new(buffer, offset, id),
+	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> Self {
+		return Self {
+			parent : Packet::new(buffer, offset, id),
 			packets : Vec::new()
 		};
 	}
 	pub fn clean(&mut self) {
 		self.packets.clear();
-		self.packet.clean();
+		self.parent.clean();
 	}
 }
 
@@ -30,21 +31,29 @@ impl Deref for AcknowledgePacket {
 	type Target = Packet;
 
 	fn deref(&self) -> &Self::Target {
-		return &self.packet;
+		return &self.parent;
 	}
 }
 
 impl DerefMut for AcknowledgePacket {
 	fn deref_mut(&mut self) -> &mut Self::Target {
-		return &mut self.packet;
+		return &mut self.parent;
 	}
 }
 
 impl Encode for AcknowledgePacket {
-	const PACKET_ID: u8 = 0;
+	const PACKET_ID: u8 = ID_UNDEFINED;
+
+	fn encode_clean(&mut self) {
+		self.parent.encode_clean();
+	}
+
+	fn decode_clean(&mut self) {
+		self.parent.decode_clean();
+	}
 
 	fn encode_header(&mut self) {
-		self.packet.encode_header();
+		self.parent.encode_header();
 	}
 
 	fn encode_payload(&mut self) {
@@ -95,7 +104,7 @@ impl Encode for AcknowledgePacket {
 	}
 
 	fn decode_header(&mut self) {
-		self.packet.decode_header();
+		self.parent.decode_header();
 	}
 
 	fn decode_payload(&mut self) {
