@@ -54,12 +54,12 @@ impl Encode for AcknowledgePacket {
 		let mut records : u16 = 0;
 		if count > 0 {
 			let mut pointer : usize = 1;
-			let mut start: u32 = self.packets.get(0).unwrap().clone();
+			let mut start: u32 = self.packets[0].clone();
 			let mut last : u32 = start.clone();
 			let mut current : u32;
 			let mut diff : i64;
 			while pointer < count {
-				current = self.packets.get(pointer).unwrap().clone();
+				current = self.packets[pointer].clone();
 				pointer += 1;
 				diff = (current - last) as i64;
 				if diff == 1 {

@@ -2,8 +2,7 @@ use crate::protocol::encapsulated_packet::EncapsulatedPacket;
 use crate::protocol::packet::{Packet, Encode};
 use std::ops::{Deref, DerefMut};
 use crate::protocol::message_identifiers::ID_CONNECTED_PING;
-use binaryutils::binary::Endian::{Little, Big};
-use binaryutils::binary_stream::BinaryStream;
+use binaryutils::binary::Endian::Little;
 
 pub struct Datagram {
 	pub header_flags : u8,
@@ -35,7 +34,7 @@ impl Datagram {
 	pub fn length(&self) -> usize {
 		let mut length : usize = 4;
 		for i in 0..self.packets.len() {
-			length += self.packets.get(i).unwrap().get_total_length();
+			length += self.packets[i].get_total_length();
 		}
 
 		return length;
@@ -83,7 +82,7 @@ impl Encode for Datagram {
 		let v : u32 = self.seq_number;
 		self.put_unsigned_triad(v, Little);
 		for i in 0..self.packets.len() {
-			let packet : Vec<u8> = self.packets.get(i).unwrap().into();
+			let packet : Vec<u8> = (&self.packets[i]).into();
 			self.put(packet);
 		}
 	}

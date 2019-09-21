@@ -2,8 +2,6 @@ use binaryutils::binary_stream::BinaryStream;
 use binaryutils::binary::{read_unsigned_int, Endian, write_unsigned_short, write_unsigned_triad, write_unsigned_int};
 use crate::protocol::packet_reliability::PacketReliability;
 use binaryutils::binary::Endian::{Big, Little};
-use std::ops::Div;
-use std::borrow::Borrow;
 
 pub struct EncapsulatedPacket {
 	/* i don't know what size should it be */
@@ -57,7 +55,7 @@ impl From<Vec<u8>> for EncapsulatedPacket {
 		let mut packet : EncapsulatedPacket = EncapsulatedPacket::new();
 
 		let mut offset : usize = 0;
-		packet.reliability = bytes.get(offset).unwrap().clone();
+		packet.reliability = bytes[offset].clone();
 		offset += 1;
 		/* TODO: don't read this for non-ack-receipt reliabilities ******************** */
 		let mut int_bytes : Vec<u8> = Vec::with_capacity(4);
@@ -66,7 +64,7 @@ impl From<Vec<u8>> for EncapsulatedPacket {
 		packet.identifier_ack = Some(read_unsigned_int(int_bytes, Endian::Big));
 		/* TODO************************************************************************ */
 		if PacketReliability::from(packet.reliability).is_sequence_or_ordered() {
-			packet.order_channel = Some(bytes.get(offset).unwrap().clone());
+			packet.order_channel = Some(bytes[offset].clone());
 			offset += 1;
 		}
 		packet.buffer = Vec::new();
@@ -97,7 +95,7 @@ impl From<&mut BinaryStream> for EncapsulatedPacket {
 		packet.has_split = (flags & Self::SPLIT_FLAG) > 0;
 		let has_split : &bool = &packet.has_split;
 
-		let length : usize = (stream.get_short(Big) as f32).div(8.0) as usize;
+		let length : usize = ((stream.get_short(Big) as f32) / 8.0) as usize;
 		if length == 0 {
 			panic!("Encapsulated payload length cannot be zero");
 		}
