@@ -15,6 +15,8 @@ pub mod new_incoming_connection;
 pub mod offline_message;
 pub mod open_connection_reply1;
 pub mod open_connection_reply2;
-
 pub mod packet;
 pub mod packet_reliability;
+pub mod unconnected_ping;
+pub mod unconnected_ping_open_connections;
+pub mod unconnected_pong;

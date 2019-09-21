@@ -1,26 +1,28 @@
 use crate::protocol::packet::Encode;
-use crate::protocol::message_identifiers::ID_INCOMPATIBLE_PROTOCOL_VERSION;
+use crate::protocol::message_identifiers::ID_UNCONNECTED_PONG;
 use std::ops::{Deref, DerefMut};
 use crate::protocol::offline_message::OfflineMessage;
 use binaryutils::binary::Endian::Big;
 
-pub struct IncompatibleProtocolVersion {
+pub struct UnconnectedPong {
 	parent : OfflineMessage,
-	pub protocol_version : u8,
+	pub send_ping_time : u64,
 	pub server_id : u64,
+	pub server_name : String
 }
 
-impl IncompatibleProtocolVersion {
+impl UnconnectedPong {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
 		return Self {
 			parent : OfflineMessage::new(buffer, offset, Self::PACKET_ID),
-			protocol_version : 0,
-			server_id : 0,
+			send_ping_time: 0,
+			server_id: 0,
+			server_name: String::new()
 		}
 	}
 }
 
-impl Deref for IncompatibleProtocolVersion {
+impl Deref for UnconnectedPong {
 	type Target = OfflineMessage;
 
 	fn deref(&self) -> &Self::Target {
@@ -28,13 +30,13 @@ impl Deref for IncompatibleProtocolVersion {
 	}
 }
 
-impl DerefMut for IncompatibleProtocolVersion {
+impl DerefMut for UnconnectedPong {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		return &mut self.parent;
 	}
 }
-impl Encode for IncompatibleProtocolVersion {
-	const PACKET_ID: u8 = ID_INCOMPATIBLE_PROTOCOL_VERSION;
+impl Encode for UnconnectedPong {
+	const PACKET_ID: u8 = ID_UNCONNECTED_PONG;
 
 	fn encode_clean(&mut self) {
 		self.parent.encode_clean();
@@ -49,11 +51,13 @@ impl Encode for IncompatibleProtocolVersion {
 	}
 
 	fn encode_payload(&mut self) {
-		let protocol_version : u8 = self.protocol_version;
-		self.put_byte(protocol_version);
-		self.write_magic();
+		let send_ping_time : u64 = self.send_ping_time;
+		self.put_unsigned_long(send_ping_time, Big);
 		let server_id : u64 = self.server_id;
 		self.put_unsigned_long(server_id, Big);
+		self.write_magic();
+		let server_name : String = self.server_name.clone();
+		self.put_string(server_name);
 	}
 
 	fn decode_header(&mut self) {
@@ -61,8 +65,9 @@ impl Encode for IncompatibleProtocolVersion {
 	}
 
 	fn decode_payload(&mut self) {
-		self.protocol_version = self.get_byte();
-		self.read_magic();
+		self.send_ping_time = self.get_unsigned_long(Big);
 		self.server_id = self.get_unsigned_long(Big);
+		self.read_magic();
+		self.server_name = self.get_string();
 	}
 }

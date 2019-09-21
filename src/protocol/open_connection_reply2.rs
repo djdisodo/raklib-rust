@@ -16,7 +16,7 @@ pub struct OpenConnectionReply2 {
 impl OpenConnectionReply2 {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
 		return Self {
-			parent : OfflineMessage::new(buffer, offset),
+			parent : OfflineMessage::new(buffer, offset, Self::PACKET_ID),
 			server_id : 0,
 			client_address: InternetAddress::dummy(),
 			mtu_size: 0,

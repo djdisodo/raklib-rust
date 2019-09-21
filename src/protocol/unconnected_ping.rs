@@ -1,26 +1,26 @@
 use crate::protocol::packet::Encode;
-use crate::protocol::message_identifiers::ID_INCOMPATIBLE_PROTOCOL_VERSION;
+use crate::protocol::message_identifiers::ID_UNCONNECTED_PING;
 use std::ops::{Deref, DerefMut};
 use crate::protocol::offline_message::OfflineMessage;
 use binaryutils::binary::Endian::Big;
 
-pub struct IncompatibleProtocolVersion {
+pub struct UnconnectedPing {
 	parent : OfflineMessage,
-	pub protocol_version : u8,
-	pub server_id : u64,
+	pub send_ping_time : u64,
+	pub client_id : u64
 }
 
-impl IncompatibleProtocolVersion {
+impl UnconnectedPing {
 	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
 		return Self {
 			parent : OfflineMessage::new(buffer, offset, Self::PACKET_ID),
-			protocol_version : 0,
-			server_id : 0,
+			send_ping_time: 0,
+			client_id: 0
 		}
 	}
 }
 
-impl Deref for IncompatibleProtocolVersion {
+impl Deref for UnconnectedPing {
 	type Target = OfflineMessage;
 
 	fn deref(&self) -> &Self::Target {
@@ -28,13 +28,13 @@ impl Deref for IncompatibleProtocolVersion {
 	}
 }
 
-impl DerefMut for IncompatibleProtocolVersion {
+impl DerefMut for UnconnectedPing {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		return &mut self.parent;
 	}
 }
-impl Encode for IncompatibleProtocolVersion {
-	const PACKET_ID: u8 = ID_INCOMPATIBLE_PROTOCOL_VERSION;
+impl Encode for UnconnectedPing {
+	const PACKET_ID: u8 = ID_UNCONNECTED_PING;
 
 	fn encode_clean(&mut self) {
 		self.parent.encode_clean();
@@ -49,11 +49,11 @@ impl Encode for IncompatibleProtocolVersion {
 	}
 
 	fn encode_payload(&mut self) {
-		let protocol_version : u8 = self.protocol_version;
-		self.put_byte(protocol_version);
+		let send_ping_time : u64 = self.send_ping_time;
+		self.put_unsigned_long(send_ping_time, Big);
 		self.write_magic();
-		let server_id : u64 = self.server_id;
-		self.put_unsigned_long(server_id, Big);
+		let client_id : u64 = self.client_id;
+		self.put_unsigned_long(client_id, Big);
 	}
 
 	fn decode_header(&mut self) {
@@ -61,8 +61,8 @@ impl Encode for IncompatibleProtocolVersion {
 	}
 
 	fn decode_payload(&mut self) {
-		self.protocol_version = self.get_byte();
+		self.send_ping_time = self.get_unsigned_long(Big);
 		self.read_magic();
-		self.server_id = self.get_unsigned_long(Big);
+		self.client_id = self.get_unsigned_long(Big);
 	}
 }

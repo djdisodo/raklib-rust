@@ -9,9 +9,9 @@ pub struct OfflineMessage {
 
 impl OfflineMessage {
 	const MAGIC : [u8; 16] = [0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78];
-	pub fn new(buffer : Vec<u8>, offset : usize) -> Self {
+	pub fn new(buffer : Vec<u8>, offset : usize, id : u8) -> Self {
 		return Self {
-			parent : Packet::new(buffer, offset, Self::PACKET_ID),
+			parent : Packet::new(buffer, offset, id),
 			magic: Vec::new()
 		}
 	}
